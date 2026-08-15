@@ -114,6 +114,15 @@
     font-size: 18px;
     font-variant-numeric: tabular-nums;
   }
+  .overlay .newhigh {
+    margin: 10px 0 0;
+    color: #fbbf24;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-shadow: 0 0 12px rgba(251, 191, 36, 0.45);
+  }
   .overlay .hint {
     margin: 0;
     color: var(--muted);
@@ -291,6 +300,7 @@
         <div class="overlay hidden" id="ovOver">
           <h2>Game Over</h2>
           <p class="final" id="finalScore">Score 0</p>
+          <p class="newhigh hidden" id="newHigh">New high score!</p>
           <button class="btn" id="btnRestart" type="button">Restart</button>
           <p class="hint">R to restart</p>
         </div>
@@ -433,12 +443,27 @@
     return `rgb(${ch(n >> 16 & 255)},${ch(n >> 8 & 255)},${ch(n & 255)})`;
   };
 
-  const loadBest = () => {
-    try { return Number(localStorage.getItem('tetris-best')) || 0; } catch { return 0; }
+  const BEST_KEY = 'html5-tetris-highscore';
+  const LEGACY_KEY = 'tetris-best';
+
+  const withStorage = (fallback, fn) => {
+    try { return fn(localStorage); } catch { return fallback; }
   };
 
   const saveBest = (v) => {
-    try { localStorage.setItem('tetris-best', String(v)); } catch { /* unavailable */ }
+    withStorage(null, (ls) => ls.setItem(BEST_KEY, String(v)));
+  };
+
+  // Reads the canonical key; one-time migration from the legacy key if present.
+  const loadBest = () => {
+    const stored = withStorage(null, (ls) => ls.getItem(BEST_KEY));
+    if (stored !== null) return Number(stored) || 0;
+    const legacy = withStorage(null, (ls) => ls.getItem(LEGACY_KEY));
+    if (legacy === null) return 0;
+    const value = Number(legacy) || 0;
+    saveBest(value);
+    withStorage(null, (ls) => ls.removeItem(LEGACY_KEY));
+    return value;
   };
 
   const boardCv = document.getElementById('board');
@@ -452,6 +477,7 @@
     level: document.getElementById('level'),
     lines: document.getElementById('lines'),
     final: document.getElementById('finalScore'),
+    newHigh: document.getElementById('newHigh'),
   };
   const overlays = {
     ready: document.getElementById('ovReady'),
@@ -468,6 +494,8 @@
     lines: 0,
     level: 1,
     best: loadBest(),
+    bestAtStart: 0,
+    newHigh: false,
     status: 'ready',
     softDrop: false,
   };
@@ -509,6 +537,7 @@
       state.board = merge(state.board, state.piece);
       state.piece = null;
       state.status = 'over';
+      state.newHigh = state.score > state.bestAtStart && state.score > 0;
       if (state.score > state.best) {
         state.best = state.score;
         saveBest(state.best);
@@ -585,6 +614,8 @@
     state.lines = 0;
     state.level = 1;
     state.softDrop = false;
+    state.bestAtStart = state.best;
+    state.newHigh = false;
     state.nextType = takeFromBag();
     spawn();
     state.status = 'playing';
@@ -711,7 +742,10 @@
     setText(hud.best, state.best);
     setText(hud.level, state.level);
     setText(hud.lines, state.lines);
-    if (state.status === 'over') setText(hud.final, 'Score ' + state.score);
+    if (state.status === 'over') {
+      setText(hud.final, 'Score ' + state.score);
+      hud.newHigh.classList.toggle('hidden', !state.newHigh);
+    }
   };
 
   const updateOverlays = () => {

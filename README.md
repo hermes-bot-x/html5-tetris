@@ -45,7 +45,15 @@ On the **Ready** screen, press any control key or tap the board to start.
 | 1–4 lines  | 40 / 100 / 300 / 1200 × level (classic table) |
 
 Level increases every 10 lines; gravity interval starts at 800 ms and shrinks
-by ~15% per level (floor 60 ms). Best score is kept in `localStorage`.
+by ~15% per level (floor 60 ms).
+
+### Best score (high score)
+
+Your best score is saved in `localStorage` under the key
+`html5-tetris-highscore` (read on load, written whenever your run beats it).
+An older `tetris-best` value, if present, is migrated to the new key once on
+load. When a game ends with a new record, the game-over overlay shows a
+"New high score!" note.
 
 ## Gameplay details
 
@@ -53,7 +61,8 @@ by ~15% per level (floor 60 ms). Best score is kept in `localStorage`.
 - Rotation with **wall kicks** (offsets −2…+2, plus upward kicks near the floor).
 - **Ghost piece** shows the landing position.
 - **Next-piece preview**, score/level/lines/best HUD.
-- Lock on land, pause/resume overlay, game-over overlay with restart.
+- Lock on land, pause/resume overlay, game-over overlay with restart and
+  "New high score!" callout when the run sets a record.
 
 ## Implementation notes
 
