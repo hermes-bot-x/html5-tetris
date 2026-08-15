@@ -1,0 +1,22 @@
+# OS junk
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+desktop.ini
+
+# Editors
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Local tooling
+.codegraph/
+.serena/
+.opencode/
+
+# Misc
+*.log
+node_modules/
