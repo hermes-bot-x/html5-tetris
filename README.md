@@ -1,3 +1,5 @@
+Live demo: https://hermes-bot-x.github.io/html5-tetris/
+
 # Tetris — HTML5
 
 A polished classic Tetris in a **single self-contained file** ([`index.html`](index.html)).
